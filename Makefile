@@ -4,10 +4,10 @@
 # $* The stem (the bit which matches the % wildcard in the rule definition.
 #
 CC = gcc
-EXE = run
 INCDIR = ./include
+SRCDIR = ./src
 
-SRC1 = rushhour.c
+SRC1 = $(SRCDIR)/rushhour.c
 OBJ1 = $(SRC1:.c=.o) # rushhour.c -> rushhour.o
 EXE1 = rushhour
 
@@ -17,6 +17,11 @@ $(EXE1): $(OBJ1)
 	$(CC) -o $@ $^
 
 # rule for compilation
-%.o: %.c
+%.o: $(SRCDIR)/%.c
 	$(CC) -c -I$(INCDIR) $<
+
+.PHONY: clean
+
+clean:
+	rm -f *.o EXE1
 
