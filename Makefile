@@ -14,14 +14,13 @@ EXE1 = rushhour
 # rule for link
 all: $(EXE1)
 $(EXE1): $(OBJ1)
-	$(CC) -o $@ $^
+	$(CC) -o $@ $<
 
 # rule for compilation
-%.o: $(SRCDIR)/%.c
-	$(CC) -c -I$(INCDIR) $<
+$(SRCDIR)/%.o: $(SRCDIR)/%.c
+	$(CC) -o $@ -c $< -I$(INCDIR)
 
 .PHONY: clean
 
 clean:
-	rm -f *.o EXE1
-
+	rm -f $(SRCDIR)/*.o $(EXE1)

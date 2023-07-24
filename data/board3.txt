@@ -1,0 +1,3 @@
+2
+A4:horizontal:2
+C6:vertical:3

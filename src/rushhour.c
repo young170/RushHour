@@ -24,21 +24,26 @@ load_game (char * filename)
 	// Use fopen, getline, strtok, atoi, strcmp
 	// Note that the last character of a line obtained by getline may be '\n'.
     FILE *fp = fopen(filename, "r");
+    if (!fp) {
+        perror("fopen");
+        return 1;
+    }
+
     char *buf = (char *) malloc(1024);
     size_t n_buf = 1024;
 
     fscanf(fp, "%d", &n_cars); // first line, number of cars
-    cars = (car_t *) malloc(sizeof(car_t) * (n_cars)); // cars in list
+    cars = (car_t *) malloc(sizeof(car_t) * (n_cars + 1)); // cars in list
 
     getline(&buf, &n_buf, fp); // skip first line 
 
     int len;
-    for (int i = 0; i < n_cars; i++) {
+    for (int i = 1; i <= n_cars; i++) {
         char *sep = ":\n";
         char *token;
 
         len = getline(&buf, &n_buf, fp);
-        cars[i].id = i + 1; // id, 1-n_cars
+        cars[i].id = i; // id
 
         token = strtok(buf, sep);
         cars[i].x1 = token[0] - 'A'; // x1 col
@@ -125,7 +130,7 @@ update_cells (void)
 	//FIXME
 	// return 0 for sucess
 	// return 1 if the given car information (cars) has a problem
-    for (int i = 0; i < n_cars; i++) {
+    for (int i = 1; i <= n_cars; i++) {
         int x = cars[i].x1;
         int y = cars[i].y1;
 
@@ -163,9 +168,7 @@ move (int id, int op)
 	//  (3) no car is placed at cells[cars[id].y1][cars[id].x1-1].
 	// You can find the condition for moving right, up, down as
 	//   a similar fashion.
-    id--;
-
-    if (id < 0 || n_cars <= id) {
+    if (id <= 0 || n_cars < id) {
         fprintf(stderr, "move invalid\n");
         return 1;
     }
@@ -228,10 +231,26 @@ move (int id, int op)
 }
 
 void
-free_alloc(void)
+free_alloc (void)
 {
     free(cars);
 }
+
+int
+bfs_solver (void)
+{
+    // return 0 for SUCCESS
+    // return 1 for FAILURE
+    
+}
+
+int
+dfs_solver (void)
+{
+    return 1;
+}
+
+int (* solver) (void);
 
 int
 main (void)
@@ -256,12 +275,12 @@ main (void)
 			case right: // fallthrough
 			case up:    // fallthrough
 			case down:
-				scanf("%d", &id) ;
-
                 if (0x0 == cars) {
                     fprintf(stderr, "init game\n");
                     break;
                 }
+
+				scanf("%d", &id) ;
 
 				move(id, op) ;
 				update_cells() ;
@@ -270,10 +289,37 @@ main (void)
                 if (1 == cells[(BOARD_SIZE / 2) - 1][BOARD_SIZE - 1]) {
                     printf("Game Over\n");
                     free_alloc();
+
                     return EXIT_SUCCESS;
                 }
 
                 break;
+
+            case bfs:
+                solver = &bfs_solver;
+            case dfs:
+                solver = &dfs_solver;
+
+                if (0x0 == cars) {
+                    fprintf(stderr, "init game\n");
+                    break;
+                }
+
+                int solved = solver();
+
+                if (0 == solved) {
+                    printf("Game Over\n");
+                    free_alloc();
+
+                    return EXIT_SUCCESS;
+                } else {
+                    // in case fails to solve program
+                    // exhausts all options
+                    fprintf(stderr, "impossible\n");
+                    free_alloc();
+
+                    return EXIT_FAILURE;
+                }
 
 			//FIXME
             case quit:

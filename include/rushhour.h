@@ -9,6 +9,8 @@ typedef enum {
 	up,
 	down,
 	quit,
+    bfs,
+    dfs,
 	N_op 
 } commands ;
 
@@ -31,7 +33,9 @@ char * op_str[N_op] = {
 	"right",
 	"up",
 	"down",
-	"quit"
+	"quit",
+    "bfs",
+    "dfs"
 } ;
 
 #define BOARD_SIZE 6
