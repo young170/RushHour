@@ -18,8 +18,10 @@ $ ./rushhour
 `start`: starts the game
 * requires the filepath for loading data
 * must be executed before any other option
+
 `right`, `left`, `down`, `up`: controls the movement of the cars
 * requires the desired car's id
+
 `bfs`, `dfs`: executes a solver algorithm
 
 ### Functions
