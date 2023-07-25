@@ -2,7 +2,7 @@
 
 
 commands
-get_op_code (char * s)
+get_op_code (char *s)
 {
 	// return the corresponding number for the command given as s.
 	// FIXME
@@ -17,7 +17,7 @@ get_op_code (char * s)
 }
 
 int
-load_game (char * filename)
+load_game (char *filename)
 {
 	//FIXME
 	// load_game returns 0 for a success, or return 1 for a failure.
