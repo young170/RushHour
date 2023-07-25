@@ -316,17 +316,100 @@ find_movable_car (void)
     return -1; // no cases found
 }
 
+void
+color_adjacent_cells (int car_id, int y, int x)
+{
+    // when colors crossover, color adjacent row/column with newer color
+    // if a car is in closer to the newer color than colors, don't overwrite
+    //
+    // further ideas: what about cases:
+    // car_id n n car_id ...
+    //    n   n n    +
+    //    n   n n    +
+    //
+    // should the car_id in the top-left become 0?
+    int flag = 0;
+    
+    // check left
+    for (int i = 0; i < x; i++) {
+        if (-1 == colored_cells[y][i]) {
+            flag = 1;
+            break;
+        }
+    }
+
+    if (0 == flag) {
+        for (int i = 0; i < x; i++) {
+            if (car_id != colored_cells[y][i] && -1 != colored_cells[y][i]) {
+                colored_cells[y][i] = 0;
+            }
+        }
+    }
+
+    // check right
+    flag = 0;
+    for (int i = x + 1; i < BOARD_SIZE; i++) {
+        if (-1 == colored_cells[y][i]) {
+            flag = 1;
+            break;
+        }
+    }
+
+    if (0 == flag) {
+        for (int i = x + 1; i < BOARD_SIZE ; i++) {
+            if (car_id != colored_cells[y][i] && -1 != colored_cells[y][i]) {
+                colored_cells[y][i] = 0;
+            }
+        }
+    }
+
+    // check up
+    flag = 0;
+    for (int i = 0; i < y; i++) {
+        if (-1 == colored_cells[i][x]) {
+            flag = 1;
+            break;
+        }
+    }
+
+    if (0 == flag) {
+        for (int i = 0; i < y; i++) {
+            if (car_id != colored_cells[i][x] && -1 != colored_cells[i][x]) {
+                colored_cells[i][x] = 0;
+            }
+        }
+    }
+
+    // check down
+    flag = 0;
+    for (int i = y + 1; i < BOARD_SIZE; i++) {
+        if (-1 == colored_cells[i][x]) {
+            flag = 1;
+            break;
+        }
+    }
+
+    if (0 == flag) {
+        for (int i = y + 1; i < BOARD_SIZE; i++) {
+            if (car_id != colored_cells[i][x] && -1 != colored_cells[i][x]) {
+                colored_cells[i][x] = 0;
+            }
+        }
+    }
+}
+
 int
-color_cell (int car_id, int y, int x, commands dir)
+color_cells (int car_id, int y, int x, commands dir)
 {
     colored_cells[y][x] = car_id; // the prev state
+    printf("%d-%d\n", car_id, dir);
     move(car_id, dir);
     update_cells();
 
+    color_adjacent_cells(car_id, y, x); // "un"color adjacent row/column
+
     return 0;
 }
-
-// check_adjacent()
 
 int
 move_to_white (int car_id)
@@ -347,7 +430,7 @@ move_to_white (int car_id)
             if (0 == colored_cells[cars[car_id].y1 - 1][cars[car_id].x1] &&
                 -1 != colored_cells[cars[car_id].y1 - 1][cars[car_id].x1])
             {
-                return color_cell(car_id, cars[car_id].y2, cars[car_id].x1, up); // prev state
+                return color_cells(car_id, cars[car_id].y2, cars[car_id].x1, up); // prev state
             } else if (cars[car_id].id != colored_cells[cars[car_id].y1 - 1][cars[car_id].x1] &&
                         -1 != colored_cells[cars[car_id].y1 - 1][cars[car_id].x1])
             {
@@ -359,7 +442,7 @@ move_to_white (int car_id)
             if (0 == colored_cells[cars[car_id].y2 + 1][cars[car_id].x1] &&
                 -1 != colored_cells[cars[car_id].y2 + 1][cars[car_id].x1])
             {
-                return color_cell(car_id, cars[car_id].y1, cars[car_id].x1, down); // prev state
+                return color_cells(car_id, cars[car_id].y1, cars[car_id].x1, down); // prev state
             } else if (cars[car_id].id != colored_cells[cars[car_id].y2 + 1][cars[car_id].x1] &&
                         -1 != colored_cells[cars[car_id].y2 + 1][cars[car_id].x1])
             {
@@ -368,16 +451,16 @@ move_to_white (int car_id)
         }
 
         if (1 == flag1) {
-            return color_cell(car_id, cars[car_id].y2, cars[car_id].x1, up);
+            return color_cells(car_id, cars[car_id].y2, cars[car_id].x1, up);
         } else if (1 == flag2) {
-            return color_cell(car_id, cars[car_id].y1, cars[car_id].x1, up);
+            return color_cells(car_id, cars[car_id].y1, cars[car_id].x1, down);
         }
     } else { // horizontal
         if (0 < cars[car_id].x1) { // check left
             if (0 == colored_cells[cars[car_id].y1][cars[car_id].x1 - 1] &&
                 -1 != colored_cells[cars[car_id].y1][cars[car_id].x1 - 1])
             {
-                return color_cell(car_id, cars[car_id].y1, cars[car_id].x2, left); // prev state
+                return color_cells(car_id, cars[car_id].y1, cars[car_id].x2, left); // prev state
             } else if (cars[car_id].id != colored_cells[cars[car_id].y1][cars[car_id].x1 - 1] &&
                         -1 != colored_cells[cars[car_id].y1][cars[car_id].x1 - 1])
             {
@@ -385,11 +468,11 @@ move_to_white (int car_id)
             }
         }
         
-        if (cars[car_id].y2 < BOARD_SIZE - 1) { // check right
+        if (cars[car_id].x2 < BOARD_SIZE - 1) { // check right
             if (0 == colored_cells[cars[car_id].y1][cars[car_id].x2 + 1] &&
                 -1 != colored_cells[cars[car_id].y1][cars[car_id].x2 + 1])
             {
-                return color_cell(car_id, cars[car_id].y1, cars[car_id].x1, right); // prev state
+                return color_cells(car_id, cars[car_id].y1, cars[car_id].x1, right); // prev state
             } else if (cars[car_id].id != colored_cells[cars[car_id].y1][cars[car_id].x2 + 1] &&
                         -1 != colored_cells[cars[car_id].y1][cars[car_id].x2 + 1])
             {
@@ -398,9 +481,9 @@ move_to_white (int car_id)
         }
 
         if (1 == flag1) {
-            return color_cell(car_id, cars[car_id].y1, cars[car_id].x2, left);
+            return color_cells(car_id, cars[car_id].y1, cars[car_id].x2, left);
         } else if (1 == flag2) {
-            return color_cell(car_id, cars[car_id].y1, cars[car_id].x1, right);
+            return color_cells(car_id, cars[car_id].y1, cars[car_id].x1, right);
         }
     }
 
