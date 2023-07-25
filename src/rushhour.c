@@ -120,6 +120,24 @@ display (void)
 
         printf("\n");
     }
+
+    printf("\n");
+
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            if (-1 == colored_cells[i][j]) {
+                printf("+");
+            } else {
+                printf("%d", colored_cells[i][j]);
+            }
+
+            printf(" ");
+        }
+
+        printf("\n");
+    }
+
+    printf("\n\n");
 }
 
 int 
@@ -140,6 +158,7 @@ update_cells (void)
             }
 
             cells[y][x] = cars[i].id;
+            colored_cells[y][x] = -1;
 
             if (vertical == cars[i].dir) {
                 y++;
@@ -241,13 +260,175 @@ bfs_solver (void)
 {
     // return 0 for SUCCESS
     // return 1 for FAILURE
-    
+    return 0;
 }
 
 int
 dfs_solver (void)
 {
+    // return 0 for SUCCESS
+    // return 1 for FAILURE
+    return 0;
+}
+
+int
+find_movable_car (void)
+{
+    // returns car id with movable cell
+    // either white or has another color
+    // if only its color, return -1
+    for (int i = 1; i <= n_cars; i++) {
+        if (vertical == cars[i].dir) {
+            if (0 < cars[i].y1) { // check up
+                if (cars[i].id != colored_cells[cars[i].y1 - 1][cars[i].x1] &&
+                    -1 != colored_cells[cars[i].y1 - 1][cars[i].x1])
+                {
+                    return i;
+                }
+            }
+            
+            if (cars[i].y2 < BOARD_SIZE - 1) { // check down
+                if (cars[i].id != colored_cells[cars[i].y2 + 1][cars[i].x1] &&
+                    -1 != colored_cells[cars[i].y2 + 1][cars[i].x1])
+                {
+                    return i;
+                }
+            }
+        } else { // horizontal
+            if (0 < cars[i].x1) { // check left
+                if (cars[i].id != colored_cells[cars[i].y1][cars[i].x1 - 1] &&
+                    -1 != colored_cells[cars[i].y1][cars[i].x1 - 1])
+                {
+                    return i;
+                }
+            }
+
+            if (cars[i].x2 < BOARD_SIZE - 1) { // check right
+                if (cars[i].id != colored_cells[cars[i].y1][cars[i].x2 + 1] &&
+                    -1 != colored_cells[cars[i].y1][cars[i].x2 + 1])
+                {
+                    return i;
+                }
+            }
+        }
+    }
+
+    return -1; // no cases found
+}
+
+int
+color_cell (int car_id, int y, int x, commands dir)
+{
+    colored_cells[y][x] = car_id; // the prev state
+    move(car_id, dir);
+    update_cells();
+
+    return 0;
+}
+
+// check_adjacent()
+
+int
+move_to_white (int car_id)
+{
+    // return 0 for SUCCESS
+    // return 1 for FAILURE
+    //
+    // check both sides of car's direction
+    // move to first found white
+    // color the prev state
+    // if adjacent cells of prev state are a different color
+    // clear them to white
+    int flag1 = 0;
+    int flag2 = 0;
+
+    if (vertical == cars[car_id].dir) {
+        if (0 < cars[car_id].y1) { // check up
+            if (0 == colored_cells[cars[car_id].y1 - 1][cars[car_id].x1] &&
+                -1 != colored_cells[cars[car_id].y1 - 1][cars[car_id].x1])
+            {
+                return color_cell(car_id, cars[car_id].y2, cars[car_id].x1, up); // prev state
+            } else if (cars[car_id].id != colored_cells[cars[car_id].y1 - 1][cars[car_id].x1] &&
+                        -1 != colored_cells[cars[car_id].y1 - 1][cars[car_id].x1])
+            {
+                flag1 = 1;
+            }
+        }
+        
+        if (cars[car_id].y2 < BOARD_SIZE - 1) { // check down
+            if (0 == colored_cells[cars[car_id].y2 + 1][cars[car_id].x1] &&
+                -1 != colored_cells[cars[car_id].y2 + 1][cars[car_id].x1])
+            {
+                return color_cell(car_id, cars[car_id].y1, cars[car_id].x1, down); // prev state
+            } else if (cars[car_id].id != colored_cells[cars[car_id].y2 + 1][cars[car_id].x1] &&
+                        -1 != colored_cells[cars[car_id].y2 + 1][cars[car_id].x1])
+            {
+                flag2 = 1;
+            }
+        }
+
+        if (1 == flag1) {
+            return color_cell(car_id, cars[car_id].y2, cars[car_id].x1, up);
+        } else if (1 == flag2) {
+            return color_cell(car_id, cars[car_id].y1, cars[car_id].x1, up);
+        }
+    } else { // horizontal
+        if (0 < cars[car_id].x1) { // check left
+            if (0 == colored_cells[cars[car_id].y1][cars[car_id].x1 - 1] &&
+                -1 != colored_cells[cars[car_id].y1][cars[car_id].x1 - 1])
+            {
+                return color_cell(car_id, cars[car_id].y1, cars[car_id].x2, left); // prev state
+            } else if (cars[car_id].id != colored_cells[cars[car_id].y1][cars[car_id].x1 - 1] &&
+                        -1 != colored_cells[cars[car_id].y1][cars[car_id].x1 - 1])
+            {
+                flag1 = 1;
+            }
+        }
+        
+        if (cars[car_id].y2 < BOARD_SIZE - 1) { // check right
+            if (0 == colored_cells[cars[car_id].y1][cars[car_id].x2 + 1] &&
+                -1 != colored_cells[cars[car_id].y1][cars[car_id].x2 + 1])
+            {
+                return color_cell(car_id, cars[car_id].y1, cars[car_id].x1, right); // prev state
+            } else if (cars[car_id].id != colored_cells[cars[car_id].y1][cars[car_id].x2 + 1] &&
+                        -1 != colored_cells[cars[car_id].y1][cars[car_id].x2 + 1])
+            {
+                flag2 = 1;
+            }
+        }
+
+        if (1 == flag1) {
+            return color_cell(car_id, cars[car_id].y1, cars[car_id].x2, left);
+        } else if (1 == flag2) {
+            return color_cell(car_id, cars[car_id].y1, cars[car_id].x1, right);
+        }
+    }
+
     return 1;
+}
+
+int
+color_solver (void)
+{
+    // return 0 for SUCCESS
+    // return 1 for FAILURE
+    while (1 != cells[(BOARD_SIZE / 2) - 1][BOARD_SIZE - 1]) { // while game not over
+        int move_car_id = find_movable_car();
+        if (-1 == move_car_id) { // all moves exhausted
+            fprintf(stderr, "exhausted\n");
+            return 1;
+        }
+
+        int move_status = move_to_white(move_car_id);
+        if (1 == move_status) { // all moves exhausted
+            fprintf(stderr, "exhausted\n");
+            return 1;
+        }
+
+        display();
+    }
+
+    return 0;
 }
 
 int (* solver) (void);
@@ -297,9 +478,14 @@ main (void)
 
             case bfs:
                 solver = &bfs_solver;
+                goto solving;
             case dfs:
                 solver = &dfs_solver;
+                goto solving;
+            case color:
+                solver = &color_solver;
 
+            solving: // goto
                 if (0x0 == cars) {
                     fprintf(stderr, "init game\n");
                     break;
@@ -315,7 +501,7 @@ main (void)
                 } else {
                     // in case fails to solve program
                     // exhausts all options
-                    fprintf(stderr, "impossible\n");
+                    fprintf(stderr, "exhausted\n");
                     free_alloc();
 
                     return EXIT_FAILURE;
