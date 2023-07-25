@@ -18,6 +18,7 @@ $ ./rushhour
 `start`: starts the game
 * requires the filepath for loading data
 * must be executed before any other option
+* some examples are in `data/`
 
 `right`, `left`, `down`, `up`: controls the movement of the cars
 * requires the desired car's id
