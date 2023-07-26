@@ -30,7 +30,7 @@ $ ./rushhour
 `right`, `left`, `down`, `up`: controls the movement of the cars
 * requires the desired car's id
 
-`bfs`, `dfs`: executes a solver algorithm
+`color`: executes the solver algorithm
 
 ### Functions
 * `commands get_op_code (char *s)`
